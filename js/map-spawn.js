@@ -19,6 +19,7 @@ let selectedPointsForConnection = [];
 let editingConnectionIndex = -1;
 let monstersData = {};
 let monsterIndex = -1;
+let defaultZoomButton = null;
 const monsterModal = new bootstrap.Modal(document.getElementById('monsterModal'));
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
@@ -139,6 +140,9 @@ zoomButtons.forEach(button => {
         // Trigger the restore button (assuming it has other functionality)
         updateSpawns();
     });
+    if(button.textContent == '800%') {
+        defaultZoomButton = button;
+    }
 });
 
 imageContainer.addEventListener('mousedown', function(event) {
@@ -295,6 +299,8 @@ fetch('data/map-spawn-v2.json')
             spawnData[zValue].push({'x': Math.round(parseInt(data.spawns[i].centerx) + parseInt(data.spawns[i].monsters[n].x) - 31744), 'y': Math.round(parseInt(data.spawns[i].centery) + parseInt(data.spawns[i].monsters[n].y) - 30976), 'z': zValue, 'name': data.spawns[i].monsters[n].name});
         }
     }
+    defaultZoomButton.click();
+    updateViewPort();
 })
 .catch(error => {
     console.error('Error fetching JSON:', error);
