@@ -9,8 +9,9 @@ let viewPortY = 0;
 let viewPortWidth = 0;
 let viewPortHeight = 0;
 const viewPort = document.getElementById('view-port');
+const marker = document.getElementById('marker');
 const importSpawnsBtn = document.getElementById('import-spawns');
-const monsterName = document.getElementById('monster-name');
+const monsterNameInput = document.getElementById('monster-name');
 const monsterResults = document.getElementById('monster-results');
 let zoomValue = 1;
 let spawnData = [];
@@ -22,7 +23,7 @@ let monsterIndex = -1;
 let defaultZoomButton = null;
 const monsterModal = new bootstrap.Modal(document.getElementById('monsterModal'));
 
-const zeroPad = (num, places) => String(num).padStart(places, '0')
+const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 // Radio button event listeners for map selection
 document.querySelectorAll('#imageInput input[name="map"]').forEach(radio => {
@@ -48,7 +49,7 @@ function canDrawPoint(point) {
             && point.x <= parseInt(viewPortX) + parseInt(viewPortWidth)
             && point.y >= parseInt(viewPortY)
             && point.y <= parseInt(viewPortY) + parseInt(viewPortHeight)
-            && monsterName.value == '') || monsterName.value.toLowerCase() == point.name.toLowerCase()) {
+            && monsterNameInput.value == '') || monsterNameInput.value.toLowerCase() == point.name.toLowerCase()) {
         return true;
     }
     return false;
@@ -56,7 +57,7 @@ function canDrawPoint(point) {
 
 function updateSpawns() {
     updateViewPort();
-    if(zoomValue < 4 && monsterName.value == '') {
+    if(zoomValue < 4 && monsterNameInput.value == '') {
         return;
     }
     document.querySelectorAll('.spawn').forEach(el => el.remove());
@@ -126,6 +127,11 @@ zoomButtons.forEach(button => {
         const newScrollTop = centerY * scalingFactor - clientHeight / 2;
         scrollContainer.scrollLeft = newScrollLeft;
         scrollContainer.scrollTop = newScrollTop;
+        // Calculate the displayed scale (same as in your snippet)
+        const rect = selectedImage.getBoundingClientRect();
+        const scaleDisplayed = rect.width / selectedImage.naturalWidth;
+        marker.style.top = (parseInt(marker.dataset.y) * scaleDisplayed) + 'px';
+        marker.style.left = (parseInt(marker.dataset.x) * scaleDisplayed) + 'px';
 
         // Update button classes to reflect the active zoom level
         zoomButtons.forEach(btn => {
@@ -140,9 +146,6 @@ zoomButtons.forEach(button => {
         // Trigger the restore button (assuming it has other functionality)
         updateSpawns();
     });
-    if(button.textContent == '800%') {
-        defaultZoomButton = button;
-    }
 });
 
 imageContainer.addEventListener('mousedown', function(event) {
@@ -179,6 +182,12 @@ function findSpawnAt(x, y) {
     const scaleDisplayedY = rect.height / selectedImage.naturalHeight;
     const threshold = 10; // 10 pixels on screen
     const currentFloor = imageInputValue.split('-')[1];
+    const currentPrimaryButton = document.querySelector('.image-zoom.btn-primary');
+    const currentZoom = currentPrimaryButton ? currentPrimaryButton.textContent : "100%";
+    // Construct the new URL
+    const newUrl = `${window.location.pathname}?point=${parseInt(x)},${parseInt(y)},${parseInt(currentFloor)},${parseFloat(currentZoom)}`;
+    // Update the URL without reloading the page
+    window.history.pushState({}, '', newUrl);
     return spawnData[currentFloor].findIndex(point => {
         const dx = (point.x - x) * scaleDisplayedX;
         const dy = (point.y - y) * scaleDisplayedY;
@@ -208,7 +217,7 @@ function showMonsterData(index) {
     monsterIndex = index;
     const currentFloor = imageInputValue.split('-')[1];
     const monster = spawnData[currentFloor][index];
-    if(!canDrawPoint(monster) || (zoomValue < 4 && monsterName.value == ''))
+    if(!canDrawPoint(monster) || (zoomValue < 4 && monsterNameInput.value == ''))
     {
         return;
     }
@@ -299,23 +308,21 @@ fetch('data/map-spawn-v2.json')
             spawnData[zValue].push({'x': Math.round(parseInt(data.spawns[i].centerx) + parseInt(data.spawns[i].monsters[n].x) - 31744), 'y': Math.round(parseInt(data.spawns[i].centery) + parseInt(data.spawns[i].monsters[n].y) - 30976), 'z': zValue, 'name': data.spawns[i].monsters[n].name});
         }
     }
-    defaultZoomButton.click();
-    updateViewPort();
 })
 .catch(error => {
     console.error('Error fetching JSON:', error);
 });
 
 
-monsterName.addEventListener('keyup', function(event) {
+monsterNameInput.addEventListener('keyup', function(event) {
     updateSpawns();
-    if(monsterName.value.trim() !== '') {
+    if(monsterNameInput.value.trim() !== '') {
         let monsterResultsHTML = '';
         for (var i = 0; i <  Object.keys(spawnData).length; i++ ) {
             let zValue = zeroPad(i, 2);
             let total = 0;
             spawnData[zValue].forEach((point, index) => {
-                if(point.name.toLowerCase() == monsterName.value.toLowerCase()) {
+                if(point.name.toLowerCase() == monsterNameInput.value.toLowerCase()) {
                     total++;
                 }
             });
@@ -337,8 +344,106 @@ fetch('data/monsters.json')
     for (var i in data) {
         monstersData[data[i].name.toLowerCase()] = data[i];
     }
-    console.log(monstersData);
 })
 .catch(error => {
     console.error('Error fetching JSON:', error);
 });
+
+function zoomImageAtPoint(centerX, centerY, centerZ, zoomPercentage = 1600) {
+    let floor = zeroPad(parseInt(centerZ), 2);
+    const floorButton = document.getElementById(`floor-${floor}-map`);
+    floorButton.checked = true; // Set the checked state
+    floorButton.click(); // Trigger click event
+    floorButton.dispatchEvent(new Event('change', { bubbles: true })); // Trigger change event
+    setTimeout(function() {
+        // Select the scrollable container, image, and viewport
+        const scrollContainer = imageContainer;
+
+        // Force a reflow to ensure container dimensions are up-to-date
+        scrollContainer.offsetWidth; // Trigger reflow
+
+        // Convert zoom percentage to scaling factor (e.g., "200" -> 2)
+        zoomValue = parseFloat(zoomPercentage) / 100;
+
+        // Function to apply zoom, scroll, and viewport updates
+        const applyZoomAndCenter = () => {
+            // Get the latest container dimensions
+            const clientWidth = scrollContainer.clientWidth;
+            const clientHeight = scrollContainer.clientHeight;
+
+            // Apply the new zoom level to the image
+            selectedImage.style.width = `${zoomPercentage}%`;
+
+            // Calculate the displayed scale (same as in your snippet)
+            const rect = selectedImage.getBoundingClientRect();
+            const scaleDisplayed = rect.width / selectedImage.naturalWidth;
+
+            // Calculate new scroll positions to center at the specified point
+            // centerX and centerY are in the image's natural coordinate system
+            const newScrollLeft = centerX * scaleDisplayed - clientWidth / 2;
+            const newScrollTop = centerY * scaleDisplayed - clientHeight / 2;
+
+            // Apply scroll positions with bounds checking
+            scrollContainer.scrollLeft = Math.max(0, newScrollLeft);
+            scrollContainer.scrollTop = Math.max(0, newScrollTop);
+
+            marker.style.display = 'block';
+            marker.style.top = (centerY * scaleDisplayed) + 'px';
+            marker.style.left = (centerX * scaleDisplayed) + 'px';
+            marker.dataset.x = centerX;
+            marker.dataset.y = centerY;
+
+            // Update button classes to reflect the active zoom level
+            zoomButtons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+                if (btn.textContent === `${zoomPercentage}%`) {
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-primary');
+                }
+            });
+
+            // Trigger additional functionality if needed
+            updateSpawns();
+        };
+
+        // Use requestAnimationFrame with a small delay to ensure DOM updates
+        requestAnimationFrame(() => {
+            setTimeout(applyZoomAndCenter, 10); // 10ms delay to handle scroll update lag
+        });
+    }, 250);
+}
+
+document.querySelectorAll('.map-point').forEach(mapPoint => {
+    mapPoint.addEventListener('click', function (e) {
+        const params = this.dataset.points.split(',');
+        if(params[3] !==  undefined) {
+            zoomImageAtPoint( params[0], params[1], params[2], params[3]);
+        }
+        else
+        {
+            zoomImageAtPoint( params[0], params[1], params[2]);
+        }
+    });
+});
+
+const urlParams = new URLSearchParams(window.location.search);
+const centerPoint = urlParams.get('point');
+if(centerPoint) {
+    const params = centerPoint.split(',');
+    setTimeout(function(){
+        if(params[3] !==  undefined) {
+            zoomImageAtPoint( params[0], params[1], params[2], params[3]);
+        }
+        else
+        {
+            zoomImageAtPoint( params[0], params[1], params[2]);
+        }
+    }, 600);
+}
+else
+{
+    setTimeout(function(){
+        zoomImageAtPoint( 1129, 767, 7);
+    }, 600);
+}

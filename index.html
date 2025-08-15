@@ -69,6 +69,19 @@
                 pointer-events: none;
                 z-index: 2;
             }
+            #marker {
+                position: absolute;
+                pointer-events: none;
+                z-index: 2;
+                color: black;
+            }
+            #marker:before {
+                transform: translate(-50%, -50%);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                color: red;
+            }
         </style>
     </head>
     <body>
@@ -162,6 +175,7 @@
                 <div class="col col-11">
                     <div id="imageContainer" data-floor="07">
                         <div id="view-port"></div>
+                        <div id="marker" style="display: none;" data-points="0,0" class="fa fa-location-dot"></div>
                         <img id="selectedImage" src="images/map/floor-07-map.png" alt="Selected Image">
                     </div>
                 </div>
