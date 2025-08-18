@@ -176,6 +176,30 @@ imageContainer.addEventListener('mousedown', function(event) {
     document.addEventListener('mouseup', onMouseUp);
 });
 
+// Add wheel event listener to imageContainer for zooming
+imageContainer.addEventListener('wheel', (event) => {
+    event.preventDefault(); // Prevent default scrolling behavior
+
+    // Find the currently active zoom button
+    const currentPrimaryButton = document.querySelector('.image-zoom.btn-primary');
+    const currentIndex = Array.from(zoomButtons).indexOf(currentPrimaryButton);
+
+    // Determine scroll direction: negative deltaY for scroll up, positive for scroll down
+    let nextIndex;
+    if (event.deltaY < 0) {
+        // Scroll up: increase zoom (move to next button)
+        nextIndex = Math.min(currentIndex + 1, zoomButtons.length - 1);
+    } else if (event.deltaY > 0) {
+        // Scroll down: decrease zoom (move to previous button)
+        nextIndex = Math.max(currentIndex - 1, 0);
+    }
+
+    // Trigger click on the next or previous zoom button
+    if (nextIndex !== currentIndex) {
+        zoomButtons[nextIndex].click();
+    }
+});
+
 function findSpawnAt(x, y) {
     const rect = selectedImage.getBoundingClientRect();
     const scaleDisplayedX = rect.width / selectedImage.naturalWidth;
