@@ -298,7 +298,7 @@ function showMonsterData(index) {
                 </div>
                 <div class="col-md-6">
                     <p><strong>Other:</strong>
-                        <br>See invisible:</strong> ${monsterData.immunities.invisible ? 'no' : 'yes'}
+                        <br>See invisible:</strong> ${monsterData.immunities.invisible ? 'yes' : 'no'}
                         <br>Push items:</strong> ${monsterData.flags.canPushItems ? 'yes' : 'no'}
                     </p>
                 </div>
