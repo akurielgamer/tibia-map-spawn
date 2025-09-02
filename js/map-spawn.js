@@ -13,6 +13,7 @@ const marker = document.getElementById('marker');
 const importSpawnsBtn = document.getElementById('import-spawns');
 const monsterNameInput = document.getElementById('monster-name');
 const monsterResults = document.getElementById('monster-results');
+const mouseZoom = document.getElementById('mouseZoom');
 let zoomValue = 1;
 let spawnData = [];
 let spawnsDB = {};
@@ -178,6 +179,7 @@ imageContainer.addEventListener('mousedown', function(event) {
 
 // Add wheel event listener to imageContainer for zooming
 imageContainer.addEventListener('wheel', (event) => {
+    if(!mouseZoom.checked) return;
     event.preventDefault(); // Prevent default scrolling behavior
 
     // Find the currently active zoom button
