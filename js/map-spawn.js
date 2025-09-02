@@ -258,36 +258,49 @@ function showMonsterData(index) {
         modalBody.innerHTML = `
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>HP:</strong> ${monsterData.hp}</p>
-                    <p><strong>Experience:</strong> ${monsterData.exp}</p>
-                    <p><strong>Mitigation:</strong> ${monsterData.mitigation}%</p>
-                    <p><strong>Bestiary Class:</strong> ${monsterData.bestiary_class}</p>
+                    <p><strong>HP:</strong> ${monsterData.health}</p>
+                    <p><strong>Experience:</strong> ${monsterData.experience}</p>
+                    <p><strong>Mitigation:</strong> ${monsterData.defenses.mitigation}%</p>
+                    <p><strong>Bestiary Class:</strong> ${monsterData.Bestiary.class}</p>
                     <p><strong>Speed:</strong> ${monsterData.speed}</p>
-                    <p><strong>Armor:</strong> ${monsterData.armor}</p>
+                    <p><strong>Armor:</strong> ${monsterData.defenses.armor}</p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Resistances:</strong></p>
                     <ul>
-                        <li>Death: ${monsterData.death}%</li>
-                        <li>Earth: ${monsterData.earth}%</li>
-                        <li>Energy: ${monsterData.energy}%</li>
-                        <li>Ice: ${monsterData.ice}%</li>
-                        <li>Fire: ${monsterData.fire}%</li>
-                        <li>Holy: ${monsterData.holy}%</li>
-                        <li>Physical: ${monsterData.physical}%</li>
+                        <li>Death: ${monsterData.elements.death}%</li>
+                        <li>Earth: ${monsterData.elements.earth}%</li>
+                        <li>Energy: ${monsterData.elements.energy}%</li>
+                        <li>Ice: ${monsterData.elements.ice}%</li>
+                        <li>Fire: ${monsterData.elements.fire}%</li>
+                        <li>Holy: ${monsterData.elements.holy}%</li>
+                        <li>Physical: ${monsterData.elements.physical}%</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Bestiary Kills:</strong> ${monsterData.bestiary_kills}</p>
+                    <p><strong>Bestiary Kills:</strong> ${monsterData.Bestiary.toKill}</p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Average Loot:</strong> ${monsterData.average_loot.toFixed(2)}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>EXP / HP:</strong> ${(monsterData.exp/monsterData.hp).toFixed(2)}</p>
+                    <p><strong>EXP / HP:</strong> ${(monsterData.experience/monsterData.health).toFixed(2)}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Loot / HP:</strong> ${(monsterData.average_loot/monsterData.hp).toFixed(2)}</p>
+                    <p><strong>Loot / HP:</strong> ${(monsterData.average_loot/monsterData.health).toFixed(2)}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Walk on:</strong>
+                        <br>Energy:</strong> ${monsterData.flags.canWalkOnEnergy ? 'yes' : 'no'}
+                        <br>Fire:</strong> ${monsterData.flags.canWalkOnFire ? 'yes' : 'no'}
+                        <br>Poison:</strong> ${monsterData.flags.canWalkOnPoison ? 'yes' : 'no'}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Other:</strong>
+                        <br>See invisible:</strong> ${monsterData.immunities.invisible ? 'no' : 'yes'}
+                        <br>Push items:</strong> ${monsterData.flags.canPushItems ? 'yes' : 'no'}
+                    </p>
                 </div>
             </div>
         `;
